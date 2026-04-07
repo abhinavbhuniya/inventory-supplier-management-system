@@ -6,7 +6,7 @@
 const SUPABASE_URL = 'https://atzzxkcaiwfsvjjnfyra.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF0enp4a2NhaXdmc3Zqam5meXJhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1NDYzOTksImV4cCI6MjA5MTEyMjM5OX0.GIGHCcMcPVWD5jwdz9CsciTRbfiEB5JPQ-wsVna9Zno';
 
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // ============================================================
 //  🧭  NAVIGATION
@@ -66,7 +66,7 @@ productForm.addEventListener('submit', async (e) => {
     unit_price:   parseFloat(document.getElementById('prod-price').value),
   };
 
-  const { error } = await supabase.from('product').insert([product]);
+  const { error } = await supabaseClient.from('product').insert([product]);
 
   if (error) {
     showToast('Error adding product: ' + error.message, 'error');
@@ -79,7 +79,7 @@ productForm.addEventListener('submit', async (e) => {
 });
 
 async function fetchProducts() {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseClient
     .from('product')
     .select('*')
     .order('product_id', { ascending: true });
@@ -119,7 +119,7 @@ supplierForm.addEventListener('submit', async (e) => {
     email:         document.getElementById('sup-email').value.trim(),
   };
 
-  const { error } = await supabase.from('supplier').insert([supplier]);
+  const { error } = await supabaseClient.from('supplier').insert([supplier]);
 
   if (error) {
     showToast('Error adding supplier: ' + error.message, 'error');
@@ -132,7 +132,7 @@ supplierForm.addEventListener('submit', async (e) => {
 });
 
 async function fetchSuppliers() {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseClient
     .from('supplier')
     .select('*')
     .order('supplier_id', { ascending: true });
@@ -169,7 +169,7 @@ async function loadOrderDropdowns() {
   const supplierSelect = document.getElementById('order-supplier');
 
   // Fetch products
-  const { data: products } = await supabase.from('product').select('product_id, product_name');
+  const { data: products } = await supabaseClient.from('product').select('product_id, product_name');
   productSelect.innerHTML = '<option value="">Select product...</option>';
   if (products) {
     products.forEach(p => {
@@ -178,7 +178,7 @@ async function loadOrderDropdowns() {
   }
 
   // Fetch suppliers
-  const { data: suppliers } = await supabase.from('supplier').select('supplier_id, supplier_name');
+  const { data: suppliers } = await supabaseClient.from('supplier').select('supplier_id, supplier_name');
   supplierSelect.innerHTML = '<option value="">Select supplier...</option>';
   if (suppliers) {
     suppliers.forEach(s => {
@@ -197,7 +197,7 @@ orderForm.addEventListener('submit', async (e) => {
     order_date:  document.getElementById('order-date').value,
   };
 
-  const { error } = await supabase.from('purchase_order').insert([order]);
+  const { error } = await supabaseClient.from('purchase_order').insert([order]);
 
   if (error) {
     showToast('Error creating order: ' + error.message, 'error');
@@ -211,7 +211,7 @@ orderForm.addEventListener('submit', async (e) => {
 
 // JOIN query — fetch orders with product and supplier names
 async function fetchOrders() {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseClient
     .from('purchase_order')
     .select(`
       order_id,
@@ -248,9 +248,9 @@ async function fetchOrders() {
 // Fallback: fetch orders, products, suppliers separately and map
 async function fetchOrdersFallback() {
   const [ordersRes, productsRes, suppliersRes] = await Promise.all([
-    supabase.from('purchase_order').select('*').order('order_id', { ascending: true }),
-    supabase.from('product').select('product_id, product_name'),
-    supabase.from('supplier').select('supplier_id, supplier_name'),
+    supabaseClient.from('purchase_order').select('*').order('order_id', { ascending: true }),
+    supabaseClient.from('product').select('product_id, product_name'),
+    supabaseClient.from('supplier').select('supplier_id, supplier_name'),
   ]);
 
   if (ordersRes.error) {
@@ -284,7 +284,7 @@ async function fetchOrdersFallback() {
 const stockTableBody = document.getElementById('stock-table-body');
 
 async function fetchStock() {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseClient
     .from('stock')
     .select(`
       stock_id,
@@ -322,8 +322,8 @@ async function fetchStock() {
 
 async function fetchStockFallback() {
   const [stockRes, productsRes] = await Promise.all([
-    supabase.from('stock').select('*').order('stock_id', { ascending: true }),
-    supabase.from('product').select('product_id, product_name'),
+    supabaseClient.from('stock').select('*').order('stock_id', { ascending: true }),
+    supabaseClient.from('product').select('product_id, product_name'),
   ]);
 
   if (stockRes.error) {
@@ -363,7 +363,7 @@ async function updateStock(stockId) {
     return;
   }
 
-  const { error } = await supabase
+  const { error } = await supabaseClient
     .from('stock')
     .update({
       available_quantity: newQty,
@@ -389,7 +389,7 @@ const paymentsTableBody = document.getElementById('payments-table-body');
 // Populate order dropdown
 async function loadPaymentDropdowns() {
   const payOrderSelect = document.getElementById('pay-order');
-  const { data: orders } = await supabase.from('purchase_order').select('order_id');
+  const { data: orders } = await supabaseClient.from('purchase_order').select('order_id');
 
   payOrderSelect.innerHTML = '<option value="">Select order...</option>';
   if (orders) {
@@ -409,7 +409,7 @@ paymentForm.addEventListener('submit', async (e) => {
     payment_mode: document.getElementById('pay-mode').value,
   };
 
-  const { error } = await supabase.from('payment').insert([payment]);
+  const { error } = await supabaseClient.from('payment').insert([payment]);
 
   if (error) {
     showToast('Error adding payment: ' + error.message, 'error');
@@ -422,7 +422,7 @@ paymentForm.addEventListener('submit', async (e) => {
 });
 
 async function fetchPayments() {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseClient
     .from('payment')
     .select('*')
     .order('payment_id', { ascending: true });
@@ -454,7 +454,7 @@ async function fetchPayments() {
 async function deletePayment(paymentId) {
   if (!confirm(`Are you sure you want to delete Payment #${paymentId}?`)) return;
 
-  const { error } = await supabase
+  const { error } = await supabaseClient
     .from('payment')
     .delete()
     .eq('payment_id', paymentId);
