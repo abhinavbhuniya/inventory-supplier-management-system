@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Inventory & Supplier Management System — DBMS Academic Project demonstrating CRUD operations and JOIN queries." />
+  <title>Inventory & Supplier Management System</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ===== Sidebar Navigation ===== -->
+  <nav class="sidebar">
+    <div class="logo">
+      <span>📦</span>
+      <span class="logo-text">InvenTrack</span>
+    </div>
+    <div class="nav-item active" data-page="products" id="nav-products">
+      <span class="icon">🏷️</span>
+      <span class="label">Products</span>
+    </div>
+    <div class="nav-item" data-page="suppliers" id="nav-suppliers">
+      <span class="icon">🏭</span>
+      <span class="label">Suppliers</span>
+    </div>
+    <div class="nav-item" data-page="orders" id="nav-orders">
+      <span class="icon">📋</span>
+      <span class="label">Orders</span>
+    </div>
+    <div class="nav-item" data-page="stock" id="nav-stock">
+      <span class="icon">📊</span>
+      <span class="label">Stock</span>
+    </div>
+    <div class="nav-item" data-page="payments" id="nav-payments">
+      <span class="icon">💳</span>
+      <span class="label">Payments</span>
+    </div>
+  </nav>
+
+  <!-- ===== Main Content ===== -->
+  <main class="main">
+
+    <!-- ==================== PRODUCTS PAGE ==================== -->
+    <section class="page active" id="page-products">
+      <h1 class="page-title">Products</h1>
+      <p class="page-subtitle">Manage your product catalog</p>
+
+      <div class="card">
+        <div class="card-title">➕ Add New Product</div>
+        <form id="product-form" class="form-grid" autocomplete="off">
+          <div class="form-group">
+            <label for="prod-name">Product Name</label>
+            <input type="text" id="prod-name" placeholder="e.g. Laptop" required />
+          </div>
+          <div class="form-group">
+            <label for="prod-category">Category</label>
+            <input type="text" id="prod-category" placeholder="e.g. Electronics" required />
+          </div>
+          <div class="form-group">
+            <label for="prod-price">Unit Price (₹)</label>
+            <input type="number" id="prod-price" placeholder="0.00" step="0.01" min="0" required />
+          </div>
+          <div class="form-group">
+            <label>&nbsp;</label>
+            <button type="submit" class="btn btn-primary" id="btn-add-product">Add Product</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="card">
+        <div class="card-title">📄 All Products</div>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Product Name</th>
+                <th>Category</th>
+                <th>Unit Price</th>
+              </tr>
+            </thead>
+            <tbody id="products-table-body">
+              <tr><td colspan="4" class="empty-state"><div class="empty-icon">📦</div>No products yet</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== SUPPLIERS PAGE ==================== -->
+    <section class="page" id="page-suppliers">
+      <h1 class="page-title">Suppliers</h1>
+      <p class="page-subtitle">Manage your supplier directory</p>
+
+      <div class="card">
+        <div class="card-title">➕ Add New Supplier</div>
+        <form id="supplier-form" class="form-grid" autocomplete="off">
+          <div class="form-group">
+            <label for="sup-name">Supplier Name</label>
+            <input type="text" id="sup-name" placeholder="e.g. ABC Corp" required />
+          </div>
+          <div class="form-group">
+            <label for="sup-phone">Phone</label>
+            <input type="text" id="sup-phone" placeholder="e.g. 9876543210" required />
+          </div>
+          <div class="form-group">
+            <label for="sup-email">Email</label>
+            <input type="email" id="sup-email" placeholder="e.g. abc@mail.com" required />
+          </div>
+          <div class="form-group">
+            <label>&nbsp;</label>
+            <button type="submit" class="btn btn-primary" id="btn-add-supplier">Add Supplier</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="card">
+        <div class="card-title">📄 All Suppliers</div>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Supplier Name</th>
+                <th>Phone</th>
+                <th>Email</th>
+              </tr>
+            </thead>
+            <tbody id="suppliers-table-body">
+              <tr><td colspan="4" class="empty-state"><div class="empty-icon">🏭</div>No suppliers yet</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== ORDERS PAGE ==================== -->
+    <section class="page" id="page-orders">
+      <h1 class="page-title">Purchase Orders</h1>
+      <p class="page-subtitle">Create orders and view joined data (Product + Supplier)</p>
+
+      <div class="card">
+        <div class="card-title">➕ Create Purchase Order</div>
+        <form id="order-form" class="form-grid" autocomplete="off">
+          <div class="form-group">
+            <label for="order-product">Product</label>
+            <select id="order-product" required>
+              <option value="">Select product...</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="order-supplier">Supplier</label>
+            <select id="order-supplier" required>
+              <option value="">Select supplier...</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="order-qty">Quantity</label>
+            <input type="number" id="order-qty" placeholder="e.g. 50" min="1" required />
+          </div>
+          <div class="form-group">
+            <label for="order-date">Order Date</label>
+            <input type="date" id="order-date" required />
+          </div>
+          <div class="form-group">
+            <label>&nbsp;</label>
+            <button type="submit" class="btn btn-primary" id="btn-add-order">Create Order</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="card">
+        <div class="card-title">📄 All Orders <span class="badge badge-success">JOIN Query</span></div>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Order ID</th>
+                <th>Product Name</th>
+                <th>Supplier Name</th>
+                <th>Quantity</th>
+                <th>Order Date</th>
+              </tr>
+            </thead>
+            <tbody id="orders-table-body">
+              <tr><td colspan="5" class="empty-state"><div class="empty-icon">📋</div>No orders yet</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== STOCK PAGE ==================== -->
+    <section class="page" id="page-stock">
+      <h1 class="page-title">Stock</h1>
+      <p class="page-subtitle">View and update available quantities</p>
+
+      <div class="card">
+        <div class="card-title">📊 Stock Levels</div>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Stock ID</th>
+                <th>Product Name</th>
+                <th>Available Qty</th>
+                <th>Last Updated</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="stock-table-body">
+              <tr><td colspan="5" class="empty-state"><div class="empty-icon">📊</div>No stock records yet</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== PAYMENTS PAGE ==================== -->
+    <section class="page" id="page-payments">
+      <h1 class="page-title">Payments</h1>
+      <p class="page-subtitle">View and manage payment records</p>
+
+      <div class="card">
+        <div class="card-title">➕ Record Payment</div>
+        <form id="payment-form" class="form-grid" autocomplete="off">
+          <div class="form-group">
+            <label for="pay-order">Order ID</label>
+            <select id="pay-order" required>
+              <option value="">Select order...</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="pay-amount">Amount (₹)</label>
+            <input type="number" id="pay-amount" placeholder="0.00" step="0.01" min="0" required />
+          </div>
+          <div class="form-group">
+            <label for="pay-date">Payment Date</label>
+            <input type="date" id="pay-date" required />
+          </div>
+          <div class="form-group">
+            <label for="pay-mode">Payment Mode</label>
+            <select id="pay-mode" required>
+              <option value="">Select mode...</option>
+              <option value="Cash">Cash</option>
+              <option value="UPI">UPI</option>
+              <option value="Card">Card</option>
+              <option value="Net Banking">Net Banking</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>&nbsp;</label>
+            <button type="submit" class="btn btn-primary" id="btn-add-payment">Add Payment</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="card">
+        <div class="card-title">📄 All Payments</div>
+        <div class="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Payment ID</th>
+                <th>Order ID</th>
+                <th>Amount</th>
+                <th>Payment Date</th>
+                <th>Mode</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="payments-table-body">
+              <tr><td colspan="6" class="empty-state"><div class="empty-icon">💳</div>No payments yet</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Supabase JS CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="script.js"></script>
+</body>
+</html>
