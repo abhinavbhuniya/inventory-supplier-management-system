@@ -34,7 +34,7 @@ function loadPageData(page) {
     case 'products':  fetchProducts(); break;
     case 'suppliers': fetchSuppliers(); break;
     case 'orders':    fetchOrders(); loadOrderDropdowns(); break;
-    case 'stock':     fetchStock(); break;
+    case 'stock':     fetchStock(); loadStockDropdowns(); break;
     case 'payments':  fetchPayments(); loadPaymentDropdowns(); break;
   }
 }
@@ -217,7 +217,8 @@ async function fetchOrders() {
       order_id,
       quantity,
       order_date,
-      product ( product_name ),
+      order_date,
+      product ( product_name, unit_price ),
       supplier ( supplier_name )
     `)
     .order('order_id', { ascending: true });
@@ -230,26 +231,30 @@ async function fetchOrders() {
   }
 
   if (!data || data.length === 0) {
-    ordersTableBody.innerHTML = `<tr><td colspan="5" class="empty-state"><div class="empty-icon">📋</div>No orders yet</td></tr>`;
+    ordersTableBody.innerHTML = `<tr><td colspan="6" class="empty-state"><div class="empty-icon">📋</div>No orders yet</td></tr>`;
     return;
   }
 
-  ordersTableBody.innerHTML = data.map(o => `
+  ordersTableBody.innerHTML = data.map(o => {
+    const price = o.product?.unit_price || 0;
+    const total = o.quantity * price;
+    return `
     <tr>
       <td>${o.order_id}</td>
       <td>${o.product?.product_name || '—'}</td>
       <td>${o.supplier?.supplier_name || '—'}</td>
       <td>${o.quantity}</td>
+      <td>₹${total.toFixed(2)}</td>
       <td>${o.order_date}</td>
     </tr>
-  `).join('');
+  `}).join('');
 }
 
 // Fallback: fetch orders, products, suppliers separately and map
 async function fetchOrdersFallback() {
   const [ordersRes, productsRes, suppliersRes] = await Promise.all([
     supabaseClient.from('purchase_order').select('*').order('order_id', { ascending: true }),
-    supabaseClient.from('product').select('product_id, product_name'),
+    supabaseClient.from('product').select('product_id, product_name, unit_price'),
     supabaseClient.from('supplier').select('supplier_id, supplier_name'),
   ]);
 
@@ -259,29 +264,62 @@ async function fetchOrdersFallback() {
   }
 
   const orders    = ordersRes.data || [];
-  const products  = Object.fromEntries((productsRes.data || []).map(p => [p.product_id, p.product_name]));
+  const products  = Object.fromEntries((productsRes.data || []).map(p => [p.product_id, { name: p.product_name, price: p.unit_price }]));
   const suppliers = Object.fromEntries((suppliersRes.data || []).map(s => [s.supplier_id, s.supplier_name]));
 
   if (orders.length === 0) {
-    ordersTableBody.innerHTML = `<tr><td colspan="5" class="empty-state"><div class="empty-icon">📋</div>No orders yet</td></tr>`;
+    ordersTableBody.innerHTML = `<tr><td colspan="6" class="empty-state"><div class="empty-icon">📋</div>No orders yet</td></tr>`;
     return;
   }
 
-  ordersTableBody.innerHTML = orders.map(o => `
+  ordersTableBody.innerHTML = orders.map(o => {
+    const p = products[o.product_id] || { name: '—', price: 0 };
+    const total = o.quantity * p.price;
+    return `
     <tr>
       <td>${o.order_id}</td>
-      <td>${products[o.product_id] || '—'}</td>
+      <td>${p.name}</td>
       <td>${suppliers[o.supplier_id] || '—'}</td>
       <td>${o.quantity}</td>
+      <td>₹${total.toFixed(2)}</td>
       <td>${o.order_date}</td>
     </tr>
-  `).join('');
+  `}).join('');
 }
 
 // ============================================================
 //  📊  STOCK — READ + UPDATE
 // ============================================================
 const stockTableBody = document.getElementById('stock-table-body');
+const stockForm = document.getElementById('stock-form');
+
+async function loadStockDropdowns() {
+  const stockProduct = document.getElementById('stock-product');
+  const { data: products } = await supabaseClient.from('product').select('product_id, product_name');
+  stockProduct.innerHTML = '<option value="">Select product...</option>';
+  if (products) {
+    products.forEach(p => {
+      stockProduct.innerHTML += `<option value="${p.product_id}">${p.product_name}</option>`;
+    });
+  }
+}
+
+stockForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const stock = {
+    product_id: parseInt(document.getElementById('stock-product').value),
+    available_quantity: parseInt(document.getElementById('stock-init-qty').value),
+    last_updated: new Date().toISOString()
+  };
+  const { error } = await supabaseClient.from('stock').insert([stock]);
+  if (error) {
+    showToast('Error initializing stock: ' + error.message, 'error');
+    return;
+  }
+  showToast('Stock initialized successfully!', 'success');
+  stockForm.reset();
+  fetchStock();
+});
 
 async function fetchStock() {
   const { data, error } = await supabaseClient
@@ -387,17 +425,33 @@ const paymentForm = document.getElementById('payment-form');
 const paymentsTableBody = document.getElementById('payments-table-body');
 
 // Populate order dropdown
+let orderTotals = {};
 async function loadPaymentDropdowns() {
   const payOrderSelect = document.getElementById('pay-order');
-  const { data: orders } = await supabaseClient.from('purchase_order').select('order_id');
+  const { data: orders } = await supabaseClient
+    .from('purchase_order')
+    .select('order_id, quantity, product ( unit_price )');
 
   payOrderSelect.innerHTML = '<option value="">Select order...</option>';
+  orderTotals = {};
+
   if (orders) {
     orders.forEach(o => {
       payOrderSelect.innerHTML += `<option value="${o.order_id}">Order #${o.order_id}</option>`;
+      const price = o.product?.unit_price || 0;
+      orderTotals[o.order_id] = o.quantity * price;
     });
   }
 }
+
+document.getElementById('pay-order').addEventListener('change', (e) => {
+  const orderId = e.target.value;
+  if (orderId && orderTotals[orderId]) {
+    document.getElementById('pay-amount').value = orderTotals[orderId].toFixed(2);
+  } else {
+    document.getElementById('pay-amount').value = '';
+  }
+});
 
 paymentForm.addEventListener('submit', async (e) => {
   e.preventDefault();
