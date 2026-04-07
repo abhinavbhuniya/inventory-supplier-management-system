@@ -4,7 +4,7 @@
 //  You can find them in: Supabase Dashboard → Settings → API
 // ============================================================
 const SUPABASE_URL = 'https://atzzxkcaiwfsvjjnfyra.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF0enp4a2NhaXdmc3Zqam5meXJhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1NDYzOTksImV4cCI6MjA5MTEyMjM5OX0.GIGHCcMcPVWD5jwdz9CsciTRbfiEB3JPQ-wsVna9Zno';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF0enp4a2NhaXdmc3Zqam5meXJhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1NDYzOTksImV4cCI6MjA5MTEyMjM5OX0.GIGHCcMcPVWD5jwdz9CsciTRbfiEB5JPQ-wsVna9Zno';
 
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
