@@ -1,0 +1,33 @@
+﻿Navigating to site...
+BROWSER CONSOLE: Failed to load resource: the server responded with a status of 404 ()
+Filling out Product form...
+Submitting form...
+
+--- TABLE HTML (Products) ---
+
+    <tr>
+      <td>1</td>
+      <td>Test</td>
+      <td>Test</td>
+      <td>Γé╣10.00</td>
+    </tr>
+  
+    <tr>
+      <td>2</td>
+      <td>Test Product 1775555359965</td>
+      <td>Test Category</td>
+      <td>Γé╣199.99</td>
+    </tr>
+  
+    <tr>
+      <td>3</td>
+      <td>Test Product 1775555385301</td>
+      <td>Test Category</td>
+      <td>Γé╣199.99</td>
+    </tr>
+  
+
+Clicking Orders page...
+
+--- TABLE HTML (Orders) ---
+<tr><td colspan="5" class="empty-state"><div class="empty-icon">≡ƒôï</div>No orders yet</td></tr>
